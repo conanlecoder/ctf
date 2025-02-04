@@ -6,10 +6,9 @@ import Navigation from '../components/Navigation';
 
 const Contact = () => {
   const Contributor = [
-    ["Nils Colire", "nils.colire@epitech.eu", "/img/nils.jpg", "Backend"],
-    ["JB Moreau", "jean-baptiste.moreau@epitech.eu", "/img/jb.jpg", "Challenge"],
-    ["Théo Faupin", "théo.faupin@epitech.eu", "/img/theo.jpg", "Frontend"],
-    ["Hugo Vincent", "hugo.vincent@epitech.eu", "/img/hugo.jpg", "Challenge"]
+    ["EL YATIMI Othmane", "othmane.el_yatimi@insa-cvl.fr", "/img/othmane.jpeg", "Backend / Frontend"],
+    ["RYANY Aymane", "aymane.ryany@insa-cvl.fr", "/img/ryany.jpeg", "Challenge"]
+
   ]
 
   return (

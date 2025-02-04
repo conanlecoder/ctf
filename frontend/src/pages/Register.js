@@ -96,7 +96,7 @@ const Register = () => {
           </p>
         </div>
         <div className="field notcentered">
-          <label className="label">Epitech Campus</label>
+          <label className="label">INSACVL Campus</label>
           <div class="select">
             <select onChange={(e) => setRegisterCity(e.target.value)}>
               <option>Montpellier</option>

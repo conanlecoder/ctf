@@ -35,9 +35,9 @@ const Home = () => {
       <Navigation />
       <h1 className="title double-divider">Plateforme <span className="blue">CTF</span> pour
         les étudiants d'
-        <a href="https://www.epitech.eu/" target="_blank" >
-          <span className="blue" href="https://www.epitech.eu/">
-            Epitech
+        <a href="https://www.INSACVL.eu/" target="_blank" >
+          <span className="blue" href="https://www.INSACVL.eu/">
+            INSACVL
           </span>
         </a>
       </h1>

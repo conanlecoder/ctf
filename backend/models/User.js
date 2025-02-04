@@ -13,7 +13,7 @@ var userSchema = mongoose.Schema({
     },
     role: {
         type: Number,
-        default: 1
+        default: 2
     },
     ville: {
         type: String,
