@@ -8,7 +8,7 @@ const createUser = async (req, res) => {
         var newUser = await User.create(req.body);
         var token = jwt.sign(
             { _id: newUser._id },
-            process.env.TOKEN_KEY,
+            process.env.JWT_SECRET,
             {
                 expiresIn: "3h",
             }
@@ -46,7 +46,7 @@ const loginUser = async (req, res) => {
 
         var token = jwt.sign(
             { _id: tempUser._id },
-            process.env.TOKEN_KEY,
+            process.env.JWT_SECRET,
             {
                 expiresIn: "3h",
             }

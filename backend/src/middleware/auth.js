@@ -8,7 +8,7 @@ async function authenticateToken(req, res, next) {
         const token = authHeader && authHeader.split(' ')[1]
 
         if (token == null) return res.sendStatus(401)
-        var isVerified = jwt.verify(token, process.env.TOKEN_KEY);
+        var isVerified = jwt.verify(token, process.env.JWT_SECRET);
         if (isVerified) {
             req.user = await User.findById(isVerified._id);
         } else {

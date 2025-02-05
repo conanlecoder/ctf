@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - ./backend/.env   # ✅ Loads environment variables
     environment:
       - NODE_ENV=production
       - DB_HOST=mongodb
@@ -15,13 +17,17 @@ services:
       - DB_PASSWORD=example
       - DB_NAME=plateform_db
       - DOCKER_HOST=unix:///var/run/docker.sock  # Enable Docker in Docker
-      - DIGITALOCEAN_ACCESS_TOKEN=${DIGITALOCEAN_ACCESS_TOKEN}  # Secure API key
+      - DO_TOKEN=${DO_TOKEN}  # Secure API key
+      - DIGITALOCEAN_SSH_FINGERPRINT=${DIGITALOCEAN_SSH_FINGERPRINT}
+
+
     depends_on:
       - mongodb
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Mount Docker socket for DinD
       - ~/.docker/machine:/root/.docker/machine  # Mount Docker Machine SSH keys
       - ~/.ssh:/root/.ssh  # Mount SSH keys
+
 
   frontend:
     build:

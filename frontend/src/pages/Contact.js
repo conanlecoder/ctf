@@ -6,8 +6,9 @@ import Navigation from '../components/Navigation';
 
 const Contact = () => {
   const Contributor = [
-    ["EL YATIMI Othmane", "othmane.el_yatimi@insa-cvl.fr", "/img/othmane.jpeg", "Backend / Frontend"],
-    ["RYANY Aymane", "aymane.ryany@insa-cvl.fr", "/img/ryany.jpeg", "Challenge"]
+      ["EL YATIMI Othmane", "othmane.el_yatimi@insa-cvl.fr", "/img/othmane.jpeg", "5A STI ASL/IA"],
+      ["Jeremy Briffaut", "jeremy.briffaut@insa-cvl.fr", "/img/briffaut1.png", "Directeur departement STI"],
+    ["RYANY Aymane", "aymane.ryany@insa-cvl.fr", "/img/ryany.jpeg", "5A STI ASL/IA"]
 
   ]
 

@@ -1,8 +1,8 @@
 const Chall = require('../models/Chall');
 const Categories = require('../models/Categories');
 const axios = require('axios');
+require("dotenv").config({ path: "/app/.env" });
 
-const DIGITALOCEAN_ACCESS_TOKEN = process.env.DO_TOKEN || "dop_v1_4c8a624599cfc4a6539de895aa1ec1fad7e38a5496bb7ff1ac7cf7652d66c234"; // Secure this in .env
 
 /**
  * Retrieves challenges by category.
@@ -84,7 +84,7 @@ const createChall = async (req, res, categoryName) => {
         // **User Data script for automatic deployment**
         const userDataScript = `#!/bin/bash
         apt update && apt install -y docker.io
-        docker run -d -p ${dashboard_port}:${internal_port} ${docker_image}
+        docker run -d -p ${internal_port}:${dashboard_port} ${docker_image}
         `;
 
         // **Create Droplet on DigitalOcean**
@@ -137,7 +137,7 @@ const createChall = async (req, res, categoryName) => {
             description,
             points,
             flags,
-            url: `http://${dropletIP}:${dashboard_port}`,
+            url: `http://${dropletIP}:${internal_port}`,
             userValidated: [],
         });
 

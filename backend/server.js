@@ -1,4 +1,5 @@
-require("dotenv").config();
+require("dotenv").config({ path: "/app/.env" });
+console.log("DO_TOKEN:", process.env.DO_TOKEN ? "Token Loaded" : "Token MISSING");
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -10,10 +11,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Route to deploy a CTF challenge
 app.post("/deploy", deployDroplet);
-
-// Route to create a challenge and deploy it
 app.post("/challenge/create/:category", createChall);
 
 app.listen(5000, () => {

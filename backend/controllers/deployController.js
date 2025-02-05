@@ -1,11 +1,12 @@
-const { exec } = require("child_process");
-require("dotenv").config(); // Load environment variables
+const axios = require("axios");
+require("dotenv").config({ path: "/app/.env" });
+
 
 const deployDroplet = async (req, res) => {
     try {
         const { droplet_name, droplet_size, docker_image } = req.body;
-        const dashboard_port = 80; // Fixed public port
-        const ctfd_internal_port = 8080; // Fixed internal port
+        const dashboard_port = 80;
+        const internal_port = 8080;
 
         if (!droplet_name || !docker_image || !droplet_size) {
             return res.status(400).json({ error: "Missing required parameters!" });
@@ -13,60 +14,63 @@ const deployDroplet = async (req, res) => {
 
         console.log(`🚀 Deploying ${docker_image} on DigitalOcean...`);
 
-        // Step 1: Create DigitalOcean Droplet
-        const createDropletCommand = `
-            docker-machine create \
-            --driver digitalocean \
-            --digitalocean-access-token ${process.env.DO_TOKEN} \
-            --digitalocean-image ubuntu-22-04-x64 \
-            --digitalocean-size ${droplet_size} \
-            --digitalocean-ssh-key-fingerprint ${process.env.DIGITALOCEAN_SSH_FINGERPRINT} \
-            ${droplet_name}
+        // Create Droplet with SSH Key
+        const userDataScript = `#!/bin/bash
+        apt update && apt install -y docker.io
+        docker run -d -p ${internal_port}:${dashboard_port} ${docker_image}
         `;
 
-        exec(createDropletCommand, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`❌ Droplet creation failed: ${error.message}`);
-                return res.status(500).json({ error: "Droplet creation failed!", details: error.message });
+        const createDroplet = await axios.post(
+            "https://api.digitalocean.com/v2/droplets",
+            {
+                name: droplet_name,
+                region: "nyc3",
+                size: droplet_size,
+                image: "ubuntu-22-04-x64",
+                ssh_keys: [process.env.DIGITALOCEAN_SSH_FINGERPRINT], // Use SSH Key
+                user_data: userDataScript // Auto-install Docker & deploy challenge
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.DO_TOKEN || DO_tOKENHARD}`,
+                    "Content-Type": "application/json",
+                },
             }
-            console.log(`✅ Droplet created: ${stdout}`);
+        );
 
-            // Step 2: Get the Droplet's IP
-            exec(`docker-machine ip ${droplet_name}`, (ipError, ipStdout) => {
-                if (ipError) {
-                    console.error(`❌ Failed to get droplet IP: ${ipError.message}`);
-                    return res.status(500).json({ error: "Failed to retrieve droplet IP" });
-                }
+        if (!createDroplet.data.droplet) {
+            return res.status(500).json({ error: "Failed to create DigitalOcean Droplet." });
+        }
 
-                const dropletIP = ipStdout.trim();
-                console.log(`🔍 Droplet is active at IP: ${dropletIP}`);
+        const droplet_id = createDroplet.data.droplet.id;
 
-                // Step 3: Deploy Docker image inside the Droplet via SSH (No Password Needed)
-                const deployCommand = `
-                    ssh root@${dropletIP} "
-                    sudo apt update && sudo apt install -y docker.io &&
-                    sudo docker pull ${docker_image} &&
-                    sudo docker run -d -p ${dashboard_port}:${ctfd_internal_port} ${docker_image}
-                    "
-                `;
+        // Wait for Droplet to become Active
+        let dropletIP = null;
+        while (!dropletIP) {
+            console.log(`🔄 Waiting for droplet ${droplet_name} to become active...`);
+            await new Promise(resolve => setTimeout(resolve, 10000));
 
-                exec(deployCommand, (deployError, deployStdout, deployStderr) => {
-                    if (deployError) {
-                        console.error(`❌ Deployment failed: ${deployError.message}`);
-                        return res.status(500).json({ error: "Deployment failed!", details: deployError.message });
-                    }
-                    console.log(`✅ Deployment successful: ${deployStdout}`);
-                    res.status(200).json({
-                        message: "Deployment successful!",
-                        challenge_url: `http://${dropletIP}:${dashboard_port}`
-                    });
-                });
-            });
+            const getDroplet = await axios.get(
+                `https://api.digitalocean.com/v2/droplets/${droplet_id}`,
+                { headers: { Authorization: `Bearer ${process.env.DO_TOKEN}` } }
+            );
+
+            if (getDroplet.data.droplet.networks.v4.length > 0) {
+                dropletIP = getDroplet.data.droplet.networks.v4[0].ip_address;
+            }
+        }
+
+        console.log(`✅ Droplet ${droplet_name} is active at IP: ${dropletIP}`);
+
+        res.status(200).json({
+            success: true,
+            message: "Deployment successful!",
+            challenge_url: `http://${dropletIP}:${dashboard_port}`
         });
 
     } catch (error) {
-        console.error("Server Error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("❌ Deployment Error:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 };
 
