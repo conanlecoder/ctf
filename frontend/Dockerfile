@@ -14,6 +14,7 @@ RUN apk add --update python3 make g++\
 RUN npm install --global node-gyp
 RUN npm install --silent
 RUN npm install react-scripts@3.4.1 -g --silent
+
 COPY --chown=node:node . /home/node/app
 EXPOSE 3001
 USER 1000

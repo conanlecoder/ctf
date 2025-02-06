@@ -1,77 +1,199 @@
-import React, { useState } from "react";
-import '@fortawesome/fontawesome-free/css/all.min.css'
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Navigation from '../components/Navigation';
+import { Link } from 'react-router-dom';
+import AdminTab from '../components/AdminTab';
 
-const AdminTab = (props) => {
-  const { chall } = props;
-  const [edit, setEdit] = useState('');
+const AdminPanel = () => {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [category, setCategory] = useState('web-server');
+  const [data, setData] = useState([]);
 
-  const deleteForm = async () => {
-    await axios({
-      method: "delete",
-      url: "http://localhost:3000/api/chall/delete/" + chall._id,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + localStorage.getItem('token')
-      },
+  // Challenge input fields
+  const [newCategory, setNewCategory] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [points, setPoints] = useState(0);
+  const [flag, setFlag] = useState('');
+  const [dockerImage, setDockerImage] = useState('');
+  const [dropletName, setDropletName] = useState('');
+  const [dropletSize, setDropletSize] = useState('s-1vcpu-1gb'); // Default selection
+
+  // Fixed values
+  const dashboardPort = 80;  // Fixed external port
+  const internalPort = 8080; // Fixed internal port
+
+  // Available Droplet Sizes
+  const dropletSizes = [
+    "s-1vcpu-1gb",
+    "s-2vcpu-2gb",
+    "s-2vcpu-4gb"
+  ];
+
+  // Check if user is admin
+  useEffect(() => {
+    axios.get("http://localhost:3000/api/user/profile", {
+      headers: { "Authorization": "Bearer " + localStorage.getItem('token') }
     })
-      .then((response) => {
-        console.log("Deleted!");
-      })
-      .catch((err) => {
-        console.log("Deletion Failed!")
-      });
-    window.location.reload(false);
+        .then((response) => {
+          if (response.data.data.role === 2) {
+            setIsAdmin(true);
+          }
+        })
+        .catch(error => console.error("Error fetching user profile:", error));
+  }, []);
+
+  // Fetch challenges based on category
+  useEffect(() => {
+    getChallenges(category);
+  }, [category]);
+
+  const getChallenges = (selectedCategory) => {
+    axios.get(`http://localhost:3000/api/chall/getChallenges/${selectedCategory}`, {
+      headers: { "Authorization": "Bearer " + localStorage.getItem('token') }
+    })
+        .then((res) => setData(res.data.data))
+        .catch(error => console.error("Error fetching challenges:", error));
   };
 
-  const handleSend = (event) => {
-    if (event.key === 'Enter') {
-      editForm();
-    }
-  }
+  // Create Challenge function
+  const createChallenge = async (event) => {
+    event.preventDefault(); // Prevent page reload
 
-  const editForm = async () => {
-    var new_edit = "{" + edit + "}";
-    await axios({
-      method: "patch",
-      url: "http://localhost:3000/api/chall/update/" + chall._id,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + localStorage.getItem('token')
-      },
-      body: {
-        new_edit
-      }
+    if (!name || !description || !points || !flag || !dockerImage || !dropletName || !dropletSize) {
+      alert("Please fill all required fields.");
+      return;
+    }
+
+    await axios.post(`http://localhost:3000/api/chall/create/${category}`, {
+      name,
+      description,
+      points,
+      flags: flag,
+      docker_image: dockerImage,
+      droplet_name: dropletName,
+      droplet_size: dropletSize,
+      dashboard_port: dashboardPort // Fixed value
+    }, {
+      headers: { "Authorization": "Bearer " + localStorage.getItem('token') }
     })
-      .then((response) => {
-        console.log(response)
-        console.log("Changed!");
-      })
-      .catch((err) => {
-        console.log("Change Failed!")
-      });
+        .then(res => {
+          alert("Challenge Created at: " + res.data.challenge_url);
+          getChallenges(category);
+        })
+        .catch(err => {
+          alert("Error creating challenge.");
+          console.error(err);
+        });
   };
 
   return (
-    <tr>
-      <td>
-        {chall.name}
-      </td>
-      <td>{chall.points}</td>
-      <td>{chall.userValidated.length}</td>
-      <td>
-        <i className="fas fa-edit" onClick={editForm} />
-        <i className="ml-3 fas fa-trash-alt" onClick={deleteForm} />
-      </td>
-      <td>
-        <div className="field has-addons">
-          <div className="control">
-            <input className="input is-small" type="text" onKeyDown={handleSend} onChange={event => setEdit(event.target.value)} placeholder="Edit" required />
-          </div>
-        </div>
-      </td>
-    </tr>
+      <div>
+        <Navigation />
+        {!isAdmin ? (
+            <div className="double-divider title header">
+              You do not have access to this page. Please go back to the Home page.
+              <div className="divider centered">
+                <button className="button is-link">
+                  <Link to="/">Home page</Link>
+                </button>
+              </div>
+            </div>
+        ) : (
+            <div className="double-divider centered">
+              <h2 className="title">Admin Panel - Manage Challenges</h2>
+
+              {/* Category Selection */}
+              <div className="field">
+                <label className="label">Select a Category</label>
+                <div className="select">
+                  <select onChange={(e) => setCategory(e.target.value)}>
+                    <option value="web-server">Web Server</option>
+                    <option value="steganography">Steganography</option>
+                    <option value="cracking">Cracking</option>
+                    <option value="programmation">Programming</option>
+                    <option value="cryptography">Cryptography</option>
+                    <option value="add">Add a new category</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Display Challenges */}
+              {category !== "add" ? (
+                  <div className="table-container">
+                    <table className="table is-hoverable is-fullwidth is-striped">
+                      <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Points</th>
+                        <th>Validated Users</th>
+                        <th>Actions</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {data.map((chall) => <AdminTab key={"Tab" + chall._id} chall={chall} />)}
+                      </tbody>
+                    </table>
+                  </div>
+              ) : (
+                  <div className="field">
+                    <label className="label">New Category Name</label>
+                    <input className="input" type="text" onChange={(e) => setNewCategory(e.target.value)} placeholder="Enter new category" required />
+                  </div>
+              )}
+
+              {/* Challenge Creation Form */}
+              <h3 className="title">Create a New Challenge</h3>
+              <form onSubmit={createChallenge}>
+                <div className="field">
+                  <label className="label">Challenge Name</label>
+                  <input className="input" type="text" onChange={(e) => setName(e.target.value)} placeholder="Challenge Name" required />
+                </div>
+
+                <div className="field">
+                  <label className="label">Description</label>
+                  <input className="input" type="text" onChange={(e) => setDescription(e.target.value)} placeholder="Description" required />
+                </div>
+
+                <div className="field">
+                  <label className="label">Points</label>
+                  <input className="input" type="number" onChange={(e) => setPoints(e.target.value)} placeholder="Points" required />
+                </div>
+
+                <div className="field">
+                  <label className="label">Flag</label>
+                  <input className="input" type="text" onChange={(e) => setFlag(e.target.value)} placeholder="CTF Flag" required />
+                </div>
+
+                <div className="field">
+                  <label className="label">Docker Image</label>
+                  <input className="input" type="text" onChange={(e) => setDockerImage(e.target.value)} placeholder="Docker Image (e.g. ctfd/ctfd:latest)" required />
+                </div>
+
+                <div className="field">
+                  <label className="label">Droplet Name</label>
+                  <input className="input" type="text" onChange={(e) => setDropletName(e.target.value)} placeholder="Droplet Name" required />
+                </div>
+
+                <div className="field">
+                  <label className="label">Droplet Size</label>
+                  <div className="select">
+                    <select value={dropletSize} onChange={(e) => setDropletSize(e.target.value)}>
+                      {dropletSizes.map(size => (
+                          <option key={size} value={size}>{size}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="field">
+                  <button className="button is-primary" type="submit">Create Challenge</button>
+                </div>
+              </form>
+            </div>
+        )}
+      </div>
   );
 };
 
-export default AdminTab;
+export default AdminPanel;

@@ -11,11 +11,11 @@ RUN apk add --no-cache bash python3 make g++ docker-cli docker-compose curl \
 
 COPY --chown=node:node package.json ./
 RUN npm install --silent
+RUN npm install react-markdown --silent
+
 COPY --chown=node:node . .
 
-# Copy the deployment script into the container
-COPY ctf_deploy.sh /app/ctf_deploy.sh
-RUN chmod +x /app/ctf_deploy.sh
+
 
 EXPOSE 3000
 USER node
