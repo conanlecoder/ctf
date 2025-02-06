@@ -99,26 +99,13 @@ const Register = () => {
           <label className="label">INSACVL Campus</label>
           <div class="select">
             <select onChange={(e) => setRegisterCity(e.target.value)}>
-              <option>Montpellier</option>
-              <option>Bordeaux</option>
-              <option>Bruxelles</option>
-              <option>La Réunion</option>
-              <option>Lille</option>
-              <option>Cotonou</option>
-              <option>Berlin</option>
-              <option>Barcelone</option>
-              <option>Toulouse</option>
-              <option>Strasbourg</option>
-              <option>Rennes</option>
-              <option>Paris</option>
-              <option>Nice</option>
-              <option>Nantes</option>
-              <option>Nancy</option>
-              <option>Mulhouse</option>
-              <option>Moulins</option>
-              <option>Marseille</option>
-              <option>Lyon</option>
-              <option>Other</option>
+              <option>INSA Centre Val de Loire</option>
+              <option>INSA Lyon</option>
+              <option>INSA Rennes</option>
+              <option>INSA Rouen Normandie</option>
+              <option>INSA Strasbourg</option>
+              <option>INSA Toulouse</option>
+              <option>INSA Hauts-de-France</option>
             </select>
           </div>
         </div>
