@@ -10,6 +10,8 @@ import Contact from "./pages/Contact";
 import SingleChallenge from "./pages/SingleChallenge";
 import SignIn from "./pages/SignIn";
 import AdminPanel from "./pages/AdminPanel";
+import Users from "./pages/Users";
+
 
 const App = () => {
   return (
@@ -25,6 +27,8 @@ const App = () => {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/users" element={<Users />} />
+
       </Routes>
     </BrowserRouter>
   );
