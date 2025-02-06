@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navigation from '../components/Navigation';
 import { Link } from 'react-router-dom';
-import AdminTab from '../components/AdminTab';
+import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
 
 const AdminPanel = () => {
     const [isAdmin, setIsAdmin] = useState(false);
@@ -119,9 +119,6 @@ const AdminPanel = () => {
                     description,
                     points,
                     flags: flag,
-                    docker_image: dockerImage,
-                    droplet_name: dropletName,
-                    droplet_size: dropletSize,
                 },
                 {
                     headers: { Authorization: 'Bearer ' + localStorage.getItem('token') },
@@ -229,13 +226,12 @@ const AdminPanel = () => {
                         </div>
 
                         <div className="field">
-                            <label className="label">Description</label>
-                            <input
+                            <label className="label">Description (Markdown Supported)</label>
+                            <textarea
                                 className="input"
-                                type="text"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Description"
+                                placeholder="Description (Markdown Supported)"
                                 required
                             />
                         </div>
@@ -264,29 +260,34 @@ const AdminPanel = () => {
                             />
                         </div>
 
-                        <div className="field">
-                            <label className="label">Docker Image</label>
-                            <input
-                                className="input"
-                                type="text"
-                                value={dockerImage}
-                                onChange={(e) => setDockerImage(e.target.value)}
-                                placeholder="Docker Image (e.g. ctfd/ctfd:latest)"
-                                required
-                            />
-                        </div>
+                        {/* Only show Docker Image and Droplet Name fields when creating a new challenge */}
+                        {!editingChallenge && (
+                            <>
+                                <div className="field">
+                                    <label className="label">Docker Image</label>
+                                    <input
+                                        className="input"
+                                        type="text"
+                                        value={dockerImage}
+                                        onChange={(e) => setDockerImage(e.target.value)}
+                                        placeholder="Docker Image (e.g. ctfd/ctfd:latest)"
+                                        required
+                                    />
+                                </div>
 
-                        <div className="field">
-                            <label className="label">Droplet Name</label>
-                            <input
-                                className="input"
-                                type="text"
-                                value={dropletName}
-                                onChange={(e) => setDropletName(e.target.value)}
-                                placeholder="Droplet Name"
-                                required
-                            />
-                        </div>
+                                <div className="field">
+                                    <label className="label">Droplet Name</label>
+                                    <input
+                                        className="input"
+                                        type="text"
+                                        value={dropletName}
+                                        onChange={(e) => setDropletName(e.target.value)}
+                                        placeholder="Droplet Name"
+                                        required
+                                    />
+                                </div>
+                            </>
+                        )}
 
                         <div className="field">
                             <label className="label">Droplet Size</label>
@@ -319,6 +320,12 @@ const AdminPanel = () => {
                             </button>
                         </div>
                     </form>
+
+                    {/* Markdown Preview */}
+                    <div className="box">
+                        <h4 className="title is-4">Description Preview</h4>
+                        <ReactMarkdown>{description}</ReactMarkdown>
+                    </div>
                 </div>
             )}
         </div>

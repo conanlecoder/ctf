@@ -43,7 +43,20 @@ router.patch('/profile', auth, function (req, res) {
   var user_id = req.user._id;
   User.updateUser(req, res, user_id);
 })
-
+router.patch('/updateRole/:id', auth, function (req, res) {
+  if (req.user.role === 2) { // Only admins can update roles
+    User.updateUserRole(req, res, req.params.id);
+  } else {
+    res.status(401).json({ success: false, msg: "Unauthorized" });
+  }
+});
+router.get('/getAllUsers', auth, function (req, res) {
+  if (req.user.role === 2) { // Only admins can fetch all users
+    User.getAllUsers(req, res);
+  } else {
+    res.status(401).json({ success: false, msg: "Unauthorized" });
+  }
+});
 /*
 @ param: req, res
 @ Utils: Delete an user

@@ -21,7 +21,18 @@ const createUser = async (req, res) => {
         res.status(400).json({success: false, msg: "Error during creation of your account."});
     }
 }
-
+const updateUserRole = async (req, res, user_id) => {
+    try {
+        const { role } = req.body;
+        if (role !== 1 && role !== 2) {
+            return res.status(400).json({ success: false, msg: "Invalid role value." });
+        }
+        await User.findByIdAndUpdate(user_id, { role });
+        res.status(200).json({ success: true, msg: "User role updated successfully." });
+    } catch (err) {
+        res.status(500).json({ success: false, msg: "Error updating user role." });
+    }
+};
 const getProfile = async (req, res) => {
     try {
         res.status(200).json({success: true, msg: "Successfully Found your profile", data: req.user});
@@ -78,11 +89,20 @@ const deleteUser = async (req, res, user_id) => {
         res.status(400).json({success: false, msg: "Error during deletion of your account."});
     }
 }
-
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find({}).select('-password -token'); // Exclude sensitive data
+        res.status(200).json({ success: true, msg: "Users retrieved successfully.", data: users });
+    } catch (err) {
+        res.status(500).json({ success: false, msg: "Error retrieving users." });
+    }
+};
 module.exports = {
     createUser,
     getProfile,
     loginUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    updateUserRole,
+    getAllUsers
 }
